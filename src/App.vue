@@ -7,10 +7,10 @@ onMounted(() => {
 })
 
 enum Direction {
-  Left, 'left',
-  Up, 'up',
-  Right, 'right',
-  Down, 'down',
+  Left = 'left',
+  Up = 'up',
+  Right = 'right',
+  Down = 'down',
 }
 
 interface SpinProgress {gripOrientation: number; time: number}
@@ -29,25 +29,25 @@ let noteData: NoteData[] = reactive([
   targetTime: 2,
   yPos: -50,
   xPos: -50,
-  originDirection: 'left'
+  originDirection: Direction.Left
   },
   {
   targetTime: 4,
   yPos: -50,
   xPos: -50,
-  originDirection: 'up'
+  originDirection: Direction.Up,
   },
   {
   targetTime: 5,
   yPos: -50,
   xPos: -50,
-  originDirection: 'down'
+  originDirection: Direction.Down
   },
   {
   targetTime: 5.5,
   yPos: -50,
   xPos: -50,
-  originDirection: 'right'
+  originDirection: Direction.Right
   },
 ])
 const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
@@ -87,12 +87,22 @@ function update(){
 	if ( alpha != null ) {
     console.log('game time', performance.now(), appStartTime.value, gameTime())
     for ( let note of noteData ) {
-      if ( note.originDirection === Direction.Left) {
-        let d = note.targetTime - gameTime()
-        if ( note.originDirection === 'left' ) {
-          note.xPos = -12.5 * d + 50
-          note.yPos = 50
-        }
+      let d = note.targetTime - gameTime()
+      if ( note.originDirection === Direction.Left ) {
+        note.xPos = -12.5 * d + 50
+        note.yPos = 50
+      }
+      else if ( note.originDirection === Direction.Right ) {
+        note.xPos = 12.5 * d + 50
+        note.yPos = 50
+      }
+      else if ( note.originDirection === Direction.Down ) {
+        note.yPos = 12.5 * d + 50
+        note.xPos = 50
+      }
+      else if ( note.originDirection === Direction.Up ) {
+        note.yPos = -12.5 * d + 50
+        note.xPos = 50
       }
     }
     // console.log('spin progress: ', spinProgress)
