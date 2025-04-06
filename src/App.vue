@@ -1,20 +1,56 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
-import { onMounted, ref, reactive} from 'vue'
+import { onMounted, ref, reactive, computed} from 'vue'
 
 onMounted(() => {
   console.log(`the component is now mounted.`)
 })
+
+enum Direction {
+  Left, 'left',
+  Up, 'up',
+  Right, 'right',
+  Down, 'down',
+}
+
 interface SpinProgress {gripOrientation: number; time: number}
-let alpha = ref(0)
-let	beta = ref(0)
-let gamma = ref(0)
+interface NoteData { targetTime: number; originDirection: Direction, yPos: number; xPos: number}
+const alpha = ref(0)
+const	beta = ref(0)
+const gamma = ref(0)
+let appStartTime = ref(0)
 let up: number = ref(null); // this is the initial reading on deviceorientation.alpha, that everything else is calibrated against
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
 let spinDirection = ref(null)
 let appHasStarted = ref(false)
-
+let noteData: NoteData[] = reactive([
+  {
+  targetTime: 2,
+  yPos: -50,
+  xPos: -50,
+  originDirection: 'left'
+  },
+  {
+  targetTime: 4,
+  yPos: -50,
+  xPos: -50,
+  originDirection: 'up'
+  },
+  {
+  targetTime: 5,
+  yPos: -50,
+  xPos: -50,
+  originDirection: 'down'
+  },
+  {
+  targetTime: 5.5,
+  yPos: -50,
+  xPos: -50,
+  originDirection: 'right'
+  },
+])
+const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
 function deviceOrientationListener(event){
   console.log('orientation event', event)
 	alpha.value = event.alpha || alpha.value
@@ -47,9 +83,19 @@ function deviceOrientationListener(event){
 }
 
 function update(){
-	if ( window._alpha ) { alpha = window._alpha } //debug
+	if ( window._alpha ) { alpha.value = window._alpha } //debug
 	if ( alpha != null ) {
-    console.log('spin progress: ', spinProgress)
+    console.log('game time', performance.now(), appStartTime.value, gameTime())
+    for ( let note of noteData ) {
+      if ( note.originDirection === Direction.Left) {
+        let d = note.targetTime - gameTime()
+        if ( note.originDirection === 'left' ) {
+          note.xPos = -12.5 * d + 50
+          note.yPos = 50
+        }
+      }
+    }
+    // console.log('spin progress: ', spinProgress)
 		// gameEl.style.transform = `translateX(-50%) translateY(-50%) rotate(${alpha - 90}deg)`
 		// Overlay.wrapper.style.transform = `translateX(-50%) translateY(-50%) rotate(${alpha - 90}deg)`
 		if ( spinProgress.length === 0 ) { spinProgress.unshift({gripOrientation, time: performance.now()}) }
@@ -108,9 +154,10 @@ function update(){
 	requestAnimationFrame(update)
 }
 
-const startApp = async function(event: any){
-  console.log('starting app')
+const startApp = async function(event: Event){
+  console.log('starting app', event)
   appHasStarted.value = true
+  appStartTime.value = performance.now()
 	if ( window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission ) {
 		let response = await DeviceMotionEvent.requestPermission()
 		if (response == 'granted') {
@@ -127,22 +174,48 @@ const startApp = async function(event: any){
 </script>
 
 <template>
-  <div id="game" :style="`transform: translateX(-50%) translateY(-50%) rotate(${alpha - 90}deg)`">
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-    <p>{{alpha}} {{beta}} {{gamma}}</p>
-    <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
+  <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
+    <div v-for="note in noteData" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" ></div>
+    <div id="game">
+
+      <p>{{alpha}} {{beta}} {{gamma}}</p> -->
+      <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-  #game {
+  .note {
+    height: 20px;
+    width: 20px;
+    border: 2px solid black;
+    border-radius: 999px;
     position: fixed;
+    /* left: 50%;
+    top: 50%; */
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+  #game-container {
+    height: 100vmax;
+    width: 100vmax;
+    position: fixed;
+    z-index: 1;
     top: 50%;
-    left: 50%
+    left: 50%;
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(32,32,172,1) 35%, rgba(0,212,255,1) 100%);
+  }
+  #game {
+    /* height: 100vmin;
+    width: 100vmin; */
+    height: 150px;
+    width: 150px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color:darkorange;
+    transform: translate(-50%, -50%);
+
   }
 </style>
