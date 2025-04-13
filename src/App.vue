@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+// import HelloWorld from './components/HelloWorld.vue'
 import { onMounted, ref, reactive, computed} from 'vue'
 
 onMounted(() => {
@@ -22,7 +22,8 @@ let appStartTime = ref(0)
 let up: number = ref(null); // this is the initial reading on deviceorientation.alpha, that everything else is calibrated against
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
-let spinDirection = ref(null)
+let spinDirection: {value: Direction | null} = ref(null)
+let tiltDirection = ref(Direction.Left)
 let appHasStarted = ref(false)
 let noteData: NoteData[] = reactive([
   {
@@ -115,16 +116,16 @@ function update(){
 		else if ( spinProgress[0].gripOrientation === gripOrientation ) {
 			// do nothing
 		}
-		else if ( (spinDirection === null || spinDirection === 'left') && (spinProgress[0].gripOrientation === (gripOrientation - 1) || (spinProgress[0].gripOrientation === 3 && gripOrientation === 0 ) )) {
-			spinDirection = 'left'
+		else if ( (spinDirection.value === null || spinDirection.value === 'left') && (spinProgress[0].gripOrientation === (gripOrientation - 1) || (spinProgress[0].gripOrientation === 3 && gripOrientation === 0 ) )) {
+			spinDirection.value = Direction.Left
 			spinProgress.unshift({gripOrientation, time: performance.now()})
 		}
-		else if ( (spinDirection === null || spinDirection === 'right') && (spinProgress[0].gripOrientation === (gripOrientation + 1) || (spinProgress[0].gripOrientation === 0 && gripOrientation === 3 ) )) {
-			spinDirection = 'right'
+		else if ( (spinDirection.value === null || spinDirection.value === 'right') && (spinProgress[0].gripOrientation === (gripOrientation + 1) || (spinProgress[0].gripOrientation === 0 && gripOrientation === 3 ) )) {
+			spinDirection.value = Direction.Right
 			spinProgress.unshift({gripOrientation, time: performance.now()})
 		}
 		else {
-			spinDirection = null
+			spinDirection.value = null
 			spinProgress = []
 		}
 
@@ -144,20 +145,23 @@ function update(){
 		}
 		if ( spinProgress.length === 5 ) {
 			// p1.jump()
-			spinDirection = null
+			spinDirection.value = null
 			spinProgress = []
 		}
 	}
 
-	if ( beta >= -40 && beta <= 40 )  { 
-		// p1.car.bodies[1].torque = -(beta / 80)
-		// p1.car.bodies[2].torque = -(beta / 80)
-		// //console.log(beta, window.game.myCar.bodies[1].torque)
-		// Matter.Body.applyForce(p1.car.bodies[3], p1.car.bodies[3].position, {x:(-beta/10000),y:-0.005})
+	if ( beta.value >= 20 )  { 
+    tiltDirection.value = Direction.Left
+	}
+	if ( beta.value <= -20 )  { 
+    tiltDirection.value = Direction.Right
 	}
 
-	if ( gamma >= -30 && gamma <= 30 ) {
-		// p1.neck.length = ((-gamma + 30) / 1.1 ) + 32
+	if ( gamma.value >= 20) {
+    tiltDirection.value = Direction.Down
+	}
+	if ( gamma.value <= -20) {
+    tiltDirection.value = Direction.Up
 	}
 
 	
@@ -187,8 +191,8 @@ const startApp = async function(event: Event){
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
     <div v-for="note in noteData" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" ></div>
     <div id="game">
-
-      <p>{{alpha}} {{beta}} {{gamma}}</p> -->
+      <p>{{ tiltDirection }}</p>
+      <p>{{alpha}} {{beta}} {{gamma}}!</p>
       <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
     </div>
   </div>
