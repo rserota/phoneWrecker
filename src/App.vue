@@ -14,7 +14,7 @@ enum Direction {
 }
 
 interface SpinProgress {gripOrientation: number; time: number}
-interface NoteData { targetTime: number; originDirection: Direction, yPos: number; xPos: number}
+interface NoteData { targetTime: number; originDirection: Direction, score: number | null, yPos: number; xPos: number}
 const alpha = ref(0)
 const	beta = ref(0)
 const gamma = ref(0)
@@ -23,32 +23,43 @@ let up: number = ref(null); // this is the initial reading on deviceorientation.
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
 let spinDirection: {value: Direction | null} = ref(null)
-let tiltDirection = ref(Direction.Left)
+let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} = reactive({
+  left: false,
+  right: false,
+  up: false,
+  down: false,
+})
+let tiltThreshold = 20
+let accuracyThreshold = .5
 let appHasStarted = ref(false)
 let noteData: NoteData[] = reactive([
   {
   targetTime: 2,
   yPos: -50,
   xPos: -50,
-  originDirection: Direction.Left
+  originDirection: Direction.Left,
+  score: null,
   },
   {
   targetTime: 4,
   yPos: -50,
   xPos: -50,
   originDirection: Direction.Up,
+  score: null,
   },
   {
   targetTime: 5,
   yPos: -50,
   xPos: -50,
-  originDirection: Direction.Down
+  originDirection: Direction.Down,
+  score: null,
   },
   {
   targetTime: 5.5,
   yPos: -50,
   xPos: -50,
-  originDirection: Direction.Right
+  originDirection: Direction.Right,
+  score: null,
   },
 ])
 const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
@@ -83,8 +94,21 @@ function deviceOrientationListener(event){
 	}
 }
 
+function onTilt(direction: Direction){
+  navigator.vibrate?.(1)
+  console.log(direction)
+  let gt = gameTime()
+  for ( let note of noteData ) {
+    let timeLeft = note.targetTime - gt
+    if ( timeLeft > 0 && timeLeft < .5 ) {
+      alert(timeLeft)
+    }
+  }
+}
+
 function update(){
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
+
 	if ( alpha != null ) {
     console.log('game time', performance.now(), appStartTime.value, gameTime())
     for ( let note of noteData ) {
@@ -150,19 +174,50 @@ function update(){
 		}
 	}
 
-	if ( beta.value >= 20 )  { 
-    tiltDirection.value = Direction.Left
+	if ( beta.value > tiltThreshold )  {
+    if ( !tiltDirection.left ) {
+      tiltDirection.left = true
+      onTilt(Direction.Left)
+    }
 	}
-	if ( beta.value <= -20 )  { 
-    tiltDirection.value = Direction.Right
+	if ( beta.value < tiltThreshold )  { 
+    tiltDirection.left = false
+	}
+	if ( beta.value > -tiltThreshold )  { 
+    tiltDirection.right = false
+	}
+	if ( beta.value < -tiltThreshold )  { 
+    if ( !tiltDirection.right ) {
+      onTilt(Direction.Right)
+      tiltDirection.right = true
+    }
 	}
 
-	if ( gamma.value >= 20) {
-    tiltDirection.value = Direction.Down
+	if ( gamma.value > tiltThreshold) {
+    if ( !tiltDirection.down ){
+      onTilt(Direction.Down)
+      tiltDirection.down = true
+    }
 	}
-	if ( gamma.value <= -20) {
-    tiltDirection.value = Direction.Up
+	if ( gamma.value < tiltThreshold) {
+    tiltDirection.down = false
 	}
+	if ( gamma.value > -tiltThreshold) {
+    tiltDirection.up = false
+	}
+	if ( gamma.value < -tiltThreshold) {
+    if ( !tiltDirection.up ){
+      onTilt(Direction.Up)
+      tiltDirection.up = true
+    }
+	}
+
+  // you "miss" a note when it reaches the center
+  for ( let note of noteData ) {
+    if ( note.score !== 0 && gameTime() > note.targetTime ) {
+      note.score = 0
+    }
+  }
 
 	
 	requestAnimationFrame(update)
@@ -189,10 +244,18 @@ const startApp = async function(event: Event){
 
 <template>
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
-    <div v-for="note in noteData" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" ></div>
-    <div id="game">
-      <p>{{ tiltDirection }}</p>
-      <p>{{alpha}} {{beta}} {{gamma}}!</p>
+    <div v-for="note in noteData" v-show="note.score !== 0" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}">{{ (note.targetTime - gameTime()) }}</div>
+    <div 
+      id="game" 
+      :class="{
+        tiltedUp: tiltDirection.up,
+        tiltedDown: tiltDirection.down, 
+        tiltedLeft: tiltDirection.left, 
+        tiltedRight: tiltDirection.right
+      }"
+    >
+      <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
+      <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
       <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
     </div>
   </div>
@@ -202,13 +265,16 @@ const startApp = async function(event: Event){
   .note {
     height: 20px;
     width: 20px;
-    border: 2px solid black;
     border-radius: 999px;
     position: fixed;
     /* left: 50%;
     top: 50%; */
     transform: translate(-50%, -50%);
     z-index: 10;
+    background-color: seagreen;
+  }
+  .bordered {
+    border: 2px solid black;
   }
   #game-container {
     height: 100vmax;
@@ -223,8 +289,8 @@ const startApp = async function(event: Event){
   #game {
     /* height: 100vmin;
     width: 100vmin; */
-    height: 150px;
-    width: 150px;
+    height: 70px;
+    width: 70px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -232,4 +298,9 @@ const startApp = async function(event: Event){
     transform: translate(-50%, -50%);
 
   }
+
+  .tiltedUp { border-top: 3px solid black; }
+  .tiltedDown { border-bottom: 3px solid black; }
+  .tiltedLeft { border-left: 3px solid black; }
+  .tiltedRight { border-right: 3px solid black; }
 </style>
