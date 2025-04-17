@@ -13,8 +13,20 @@ enum Direction {
   Down = 'down',
 }
 
+enum NoteType {
+  Tap = 'tap', // simple tap in one direction
+  HoldDown = 'holdDown', // hold the direction until the hold up. must be paired.
+  HoldUp = 'holdUp', // release a previous holdDown
+  Left90 = 'left90', // turn left 90 degrees
+  Left180 = 'left180',
+  Left360 = 'left360',
+  Right90 = 'right90',
+  Right180 = 'right180',
+  Right360 = 'right360',
+}
+
 interface SpinProgress {gripOrientation: number; time: number}
-interface NoteData { targetTime: number; originDirection: Direction, score: number | null, yPos: number; xPos: number}
+interface NoteData { targetTime: number; originDirection: Direction, type: NoteType, score: number | null, yPos: number; xPos: number}
 const alpha = ref(0)
 const	beta = ref(0)
 const gamma = ref(0)
@@ -40,6 +52,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Left,
   score: null,
+  type: NoteType.Tap,
   },
   {
   targetTime: 4,
@@ -47,6 +60,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Up,
   score: null,
+  type: NoteType.Tap,
   },
   {
   targetTime: 5,
@@ -54,6 +68,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Down,
   score: null,
+  type: NoteType.Tap,
   },
   {
   targetTime: 5.5,
@@ -61,6 +76,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Right,
   score: null,
+  type: NoteType.Tap,
   },
 ])
 const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
@@ -109,10 +125,10 @@ function onTilt(direction: Direction){
   console.log(direction)
   let gt = gameTime()
 
-  // maybe use .find() so i only grab one note at a time? there's no reason to score multiple notes from one tap
+  //onTilt should look for one note at a time, but the spin methods need to check multiple notes
   for ( let note of noteData ) {
     let timeLeft = note.targetTime - gt
-    if ( timeLeft > 0 && timeLeft < .5 ) {
+    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection ) {
       const score = triangularOutput(timeLeft*100) + 25
       note.score = score
       totalScore.value += score
@@ -313,6 +329,10 @@ const startApp = async function(event: Event){
     background-color:darkorange;
     transform: translate(-50%, -50%);
 
+  }
+
+  .started {
+    display: none;
   }
 
   .tiltedUp { border-top: 3px solid black; }
