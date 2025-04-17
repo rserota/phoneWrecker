@@ -32,6 +32,7 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
 let tiltThreshold = 20
 let accuracyThreshold = .5
 let appHasStarted = ref(false)
+let totalScore = ref(0)
 let noteData: NoteData[] = reactive([
   {
   targetTime: 2,
@@ -94,14 +95,28 @@ function deviceOrientationListener(event){
 	}
 }
 
+function triangularOutput(x: number) {
+  if (x >= 0 && x <= 25) {
+    return x; // rising edge
+  } else if (x > 25 && x <= 50) {
+    return -x + 50; // falling edge
+  } else {
+    return 0; // outside defined range
+  }
+}
 function onTilt(direction: Direction){
   navigator.vibrate?.(1)
   console.log(direction)
   let gt = gameTime()
+
+  // maybe use .find() so i only grab one note at a time? there's no reason to score multiple notes from one tap
   for ( let note of noteData ) {
     let timeLeft = note.targetTime - gt
     if ( timeLeft > 0 && timeLeft < .5 ) {
-      alert(timeLeft)
+      const score = triangularOutput(timeLeft*100) + 25
+      note.score = score
+      totalScore.value += score
+      break
     }
   }
 }
@@ -244,7 +259,7 @@ const startApp = async function(event: Event){
 
 <template>
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
-    <div v-for="note in noteData" v-show="note.score !== 0" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}">{{ (note.targetTime - gameTime()) }}</div>
+    <div v-for="note in noteData" v-show="note.score === null" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}">{{ (note.targetTime - gameTime()) }}</div>
     <div 
       id="game" 
       :class="{
@@ -254,6 +269,7 @@ const startApp = async function(event: Event){
         tiltedRight: tiltDirection.right
       }"
     >
+      <p>{{ totalScore }}</p>
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
       <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
