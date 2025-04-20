@@ -44,6 +44,7 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
 let tiltThreshold = 20
 let accuracyThreshold = .5
 let appHasStarted = ref(false)
+let gameColor = ref('red')
 let totalScore = ref(0)
 let noteData: NoteData[] = reactive([
   {
@@ -121,20 +122,36 @@ function triangularOutput(x: number) {
   }
 }
 function onTilt(direction: Direction){
-  navigator.vibrate?.(1)
+  navigator.vibrate?.(1) // doesn't seem to work, even on android
   console.log(direction)
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
   for ( let note of noteData ) {
     let timeLeft = note.targetTime - gt
-    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection ) {
+    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && note.type === NoteType.Tap ) {
       const score = triangularOutput(timeLeft*100) + 25
       note.score = score
       totalScore.value += score
       break
     }
   }
+}
+
+function onTurn(noteType: NoteType){
+  let gt = gameTime()
+
+  //onTilt should look for one note at a time, but the spin methods need to check multiple notes
+  for ( let note of noteData ) {
+    let timeLeft = note.targetTime - gt
+    if ( timeLeft > 0 && timeLeft < .5 && note.type === noteType ) {
+      const score = triangularOutput(timeLeft*100) + 25
+      note.score = score
+      totalScore.value += score
+      break
+    }
+  }
+
 }
 
 function update(){
@@ -187,18 +204,21 @@ function update(){
 		// only track the last 5 positions, to know if they made a complete turn
 		if ( spinProgress.length > 5 ) { spinProgress.length = 5 }
 		if ( spinProgress.length === 1 ) {
-			// p1.car.bodies[0].render.fillStyle = 'blue' 
+			gameColor.value = 'blue' 
 		}
 		if ( spinProgress.length === 2 ) { 
-			// p1.car.bodies[0].render.fillStyle = 'red' 
+      gameColor.value = 'orangered'
+      if ( spinDirection.value === Direction.Left ) { onTurn(NoteType.Left90) }
+      else if ( spinDirection.value === Direction.Right ) { onTurn(NoteType.Right90) }
 		}
 		if ( spinProgress.length === 3 ) { 
-			// p1.car.bodies[0].render.fillStyle = 'yellow' 
+      gameColor.value = 'yellow'
 		}
 		if ( spinProgress.length === 4 ) { 
-			// p1.car.bodies[0].render.fillStyle = 'green' 
+      gameColor.value = 'green'
 		}
 		if ( spinProgress.length === 5 ) {
+      alert('360')
 			// p1.jump()
 			spinDirection.value = null
 			spinProgress = []
@@ -275,7 +295,23 @@ const startApp = async function(event: Event){
 
 <template>
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
-    <div v-for="note in noteData" v-show="note.score === null" :style="`top: ${note.yPos}%; left: ${note.xPos}%`" class="note" :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}">{{ (note.targetTime - gameTime()) }}</div>
+    <div
+      v-for="note in noteData" 
+      v-show="note.score === null" 
+      :style="`top: ${note.yPos}%; left: ${note.xPos}%`" 
+      class="note" 
+      :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}"
+    >
+
+      <i v-if="note.type === 'tap'" class="bi-disc spinning"></i>
+      <i v-if="note.type === 'left90'" class="arrow-90deg-left"></i>
+      <i v-if="note.type === 'left180'" class="arrow-90deg-left"></i>
+      <i v-if="note.type === 'left360'" class="arrow-counterclockwise"></i>
+      <i v-if="note.type === 'right90'" class="arrow-90deg-right"></i>
+      <i v-if="note.type === 'right180'" class="arrow-90deg-right"></i>
+      <i v-if="note.type === 'right360'" class="arrow-countercounterclockwise"></i>
+      <!-- {{ (note.targetTime - gameTime()) }} -->
+    </div>
     <div 
       id="game" 
       :class="{
@@ -284,7 +320,9 @@ const startApp = async function(event: Event){
         tiltedLeft: tiltDirection.left, 
         tiltedRight: tiltDirection.right
       }"
+      :style="{backgroundColor: gameColor}"
     >
+    <i class="bi-alarm"></i>
       <p>{{ totalScore }}</p>
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
@@ -295,16 +333,34 @@ const startApp = async function(event: Event){
 
 <style scoped>
   .note {
-    height: 20px;
-    width: 20px;
+    height: 25px;
+    width: 25px;
     border-radius: 999px;
     position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     /* left: 50%;
     top: 50%; */
     transform: translate(-50%, -50%);
     z-index: 10;
     background-color: seagreen;
   }
+  .spinning {
+    animation-name: spin;
+    animation-duration: 2000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear; 
+  }
+
+  @keyframes spin {
+    from {
+      transform:rotate(0deg);
+    }
+    to {
+      transform:rotate(360deg);
+    }
+}
   .bordered {
     border: 2px solid black;
   }
@@ -326,7 +382,7 @@ const startApp = async function(event: Event){
     position: absolute;
     top: 50%;
     left: 50%;
-    background-color:darkorange;
+    /* background-color:darkorange; */
     transform: translate(-50%, -50%);
 
   }
