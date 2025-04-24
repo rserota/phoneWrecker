@@ -35,6 +35,7 @@ let up: number = ref(null); // this is the initial reading on deviceorientation.
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
 let spinDirection: {value: Direction | null} = ref(null)
+let totalTurns = ref(0)
 let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} = reactive({
   left: false,
   right: false,
@@ -43,6 +44,7 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
 })
 let tiltThreshold = 20
 let accuracyThreshold = .5
+let timeToTarget: number = 2
 let appHasStarted = ref(false)
 let gameColor = ref('red')
 let totalScore = ref(0)
@@ -53,7 +55,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Left,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Left90,
   },
   {
   targetTime: 4,
@@ -61,7 +63,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Up,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Right90,
   },
   {
   targetTime: 5,
@@ -69,7 +71,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Down,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Right90,
   },
   {
   targetTime: 5.5,
@@ -77,12 +79,14 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Right,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Left90,
   },
 ])
+
 const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
 function deviceOrientationListener(event){
   console.log('orientation event', event)
+  let oldGripOrientation: number = gripOrientation
 	alpha.value = event.alpha || alpha.value
 	if ( up == null ) { up = event.alpha }
 	if ( alpha.value < 45 ) { 
@@ -110,6 +114,17 @@ function deviceOrientationListener(event){
 		beta.value = event.beta || beta.value
 		gamma.value = event.gamma || gamma.value
 	}
+
+  if ( gripOrientation !== oldGripOrientation ){
+    if ( oldGripOrientation === gripOrientation - 1 || oldGripOrientation === 3 && gripOrientation === 0 ) {
+      totalTurns.value++
+      onTurn(NoteType.Left90)
+    }
+    if ( oldGripOrientation === gripOrientation + 1 || oldGripOrientation === 0 && gripOrientation === 3 ) {
+      totalTurns.value--
+      onTurn(NoteType.Right90)
+    }
+  }
 }
 
 function triangularOutput(x: number) {
@@ -162,19 +177,23 @@ function update(){
     for ( let note of noteData ) {
       let d = note.targetTime - gameTime()
       if ( note.originDirection === Direction.Left ) {
-        note.xPos = -12.5 * d + 50
+        note.xPos = (-50 / timeToTarget) * (d) + 50;
+        // note.xPos = -12.5 * d + 50
         note.yPos = 50
       }
       else if ( note.originDirection === Direction.Right ) {
-        note.xPos = 12.5 * d + 50
+        note.xPos = (50 / timeToTarget) * (d) + 50;
+        // note.xPos = 12.5 * d + 50
         note.yPos = 50
       }
       else if ( note.originDirection === Direction.Down ) {
-        note.yPos = 12.5 * d + 50
+        note.yPos = (50 / timeToTarget) * (d) + 50;
+        // note.yPos = 12.5 * d + 50
         note.xPos = 50
       }
       else if ( note.originDirection === Direction.Up ) {
-        note.yPos = -12.5 * d + 50
+        note.yPos = (-50 / timeToTarget) * (d) + 50;
+        // note.yPos = -12.5 * d + 50
         note.xPos = 50
       }
     }
@@ -204,12 +223,10 @@ function update(){
 		// only track the last 5 positions, to know if they made a complete turn
 		if ( spinProgress.length > 5 ) { spinProgress.length = 5 }
 		if ( spinProgress.length === 1 ) {
-			gameColor.value = 'blue' 
+			gameColor.value = 'skyblue' 
 		}
 		if ( spinProgress.length === 2 ) { 
       gameColor.value = 'orangered'
-      if ( spinDirection.value === Direction.Left ) { onTurn(NoteType.Left90) }
-      else if ( spinDirection.value === Direction.Right ) { onTurn(NoteType.Right90) }
 		}
 		if ( spinProgress.length === 3 ) { 
       gameColor.value = 'yellow'
@@ -304,12 +321,12 @@ const startApp = async function(event: Event){
     >
 
       <i v-if="note.type === 'tap'" class="bi-disc spinning"></i>
-      <i v-if="note.type === 'left90'" class="arrow-90deg-left"></i>
-      <i v-if="note.type === 'left180'" class="arrow-90deg-left"></i>
-      <i v-if="note.type === 'left360'" class="arrow-counterclockwise"></i>
-      <i v-if="note.type === 'right90'" class="arrow-90deg-right"></i>
-      <i v-if="note.type === 'right180'" class="arrow-90deg-right"></i>
-      <i v-if="note.type === 'right360'" class="arrow-countercounterclockwise"></i>
+      <i v-if="note.type === 'left90'" class="bi-arrow-90deg-left"></i>
+      <i v-if="note.type === 'left180'" class="bi-arrow-90deg-left"></i>
+      <i v-if="note.type === 'left360'" class="bi-arrow-counterclockwise"></i>
+      <i v-if="note.type === 'right90'" class="bi-arrow-90deg-right"></i>
+      <i v-if="note.type === 'right180'" class="bi-arrow-90deg-right"></i>
+      <i v-if="note.type === 'right360'" class="bi-arrow-countercounterclockwise"></i>
       <!-- {{ (note.targetTime - gameTime()) }} -->
     </div>
     <div 
@@ -322,8 +339,9 @@ const startApp = async function(event: Event){
       }"
       :style="{backgroundColor: gameColor}"
     >
-    <i class="bi-alarm"></i>
-      <p>{{ totalScore }}</p>
+      <!-- <i class="bi-alarm"></i> -->
+      <!-- <p>{{ totalScore }}</p> -->
+      <p>{{ totalTurns }}</p>
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
       <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
@@ -333,8 +351,8 @@ const startApp = async function(event: Event){
 
 <style scoped>
   .note {
-    height: 25px;
-    width: 25px;
+    height: 35px;
+    width: 35px;
     border-radius: 999px;
     position: fixed;
     display: flex;
@@ -375,10 +393,10 @@ const startApp = async function(event: Event){
     background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(32,32,172,1) 35%, rgba(0,212,255,1) 100%);
   }
   #game {
-    /* height: 100vmin;
-    width: 100vmin; */
-    height: 70px;
-    width: 70px;
+    height: 20vmax;
+    width: 20vmax;
+    /* height: 70px; */
+    /* width: 70px; */
     position: absolute;
     top: 50%;
     left: 50%;
