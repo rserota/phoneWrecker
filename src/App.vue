@@ -43,8 +43,9 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
   down: false,
 })
 let tiltThreshold = 20
-let accuracyThreshold = .5
+let accuracyThreshold = .25 // a 'perfect' tap is .25 before target time. a valid tap can be at the target time to .5 seconds before
 let timeToTarget: number = 2
+const boundarySize = `${(50/timeToTarget) * .25}%`
 let appHasStarted = ref(false)
 let gameColor = ref('red')
 let totalScore = ref(0)
@@ -168,7 +169,6 @@ function onTurn(noteType: NoteType){
   }
 
 }
-
 function update(){
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
 
@@ -176,6 +176,8 @@ function update(){
     console.log('game time', performance.now(), appStartTime.value, gameTime())
     for ( let note of noteData ) {
       let d = note.targetTime - gameTime()
+      //xPos needs to be 50 when d is 0. xPos is in %, so 50% is the middle of the page
+
       if ( note.originDirection === Direction.Left ) {
         note.xPos = (-50 / timeToTarget) * (d) + 50;
         // note.xPos = -12.5 * d + 50
@@ -337,7 +339,7 @@ const startApp = async function(event: Event){
         tiltedLeft: tiltDirection.left, 
         tiltedRight: tiltDirection.right
       }"
-      :style="{backgroundColor: gameColor}"
+      :style="{backgroundColor: gameColor, height: boundarySize, width: boundarySize}"
     >
       <!-- <i class="bi-alarm"></i> -->
       <!-- <p>{{ totalScore }}</p> -->
@@ -393,8 +395,8 @@ const startApp = async function(event: Event){
     background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(32,32,172,1) 35%, rgba(0,212,255,1) 100%);
   }
   #game {
-    height: 20vmax;
-    width: 20vmax;
+    /* height: 12.5%;
+    width: 12.5%; */
     /* height: 70px; */
     /* width: 70px; */
     position: absolute;
