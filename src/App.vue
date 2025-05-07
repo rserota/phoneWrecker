@@ -57,7 +57,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Left,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Left360,
   },
   {
   targetTime: 4,
@@ -65,7 +65,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Up,
   score: null,
-  type: NoteType.Tap,
+  type: NoteType.Right360,
   },
   {
   targetTime: 5,
@@ -170,6 +170,21 @@ function onTurn(noteType: NoteType){
   }
 
 }
+
+function onSpin(noteType: NoteType){
+  let gt = gameTime()
+
+  //onTilt should look for one note at a time, but the spin methods need to check multiple notes
+  for ( let note of noteData ) {
+    let timeLeft = note.targetTime - gt
+    if ( timeLeft > 0 && timeLeft < .5 && note.type === noteType ) {
+      const score = triangularOutput(timeLeft*100) + 25
+      note.score = score
+      totalScore.value += score
+    }
+  }
+}
+
 function update(){
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
 
@@ -238,7 +253,7 @@ function update(){
       gameColor.value = 'green'
 		}
 		if ( spinProgress.length === 5 ) {
-      alert('360')
+      onSpin(`${spinDirection.value}360`)
 			// p1.jump()
 			spinDirection.value = null
 			spinProgress = []
@@ -333,7 +348,7 @@ const startApp = async function(event: Event){
       <i v-if="note.type === 'left360'" class="bi-arrow-counterclockwise"></i>
       <i v-if="note.type === 'right90'" class="bi-arrow-90deg-right"></i>
       <i v-if="note.type === 'right180'" class="bi-arrow-90deg-right"></i>
-      <i v-if="note.type === 'right360'" class="bi-arrow-countercounterclockwise"></i>
+      <i v-if="note.type === 'right360'" class="bi-arrow-clockwise"></i>
       <!-- {{ (note.targetTime - gameTime()) }} -->
     </div>
     <div 
@@ -350,15 +365,15 @@ const startApp = async function(event: Event){
       <!-- <p>{{ totalTurns }}</p> -->
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
-      <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
+      <button class="start-button" :class="{'started':appHasStarted}" @click="startApp()">Start</button>
     </div>
   </div>
 </template>
 
 <style scoped>
   .note {
-    height: 35px;
-    width: 35px;
+    height: 50px;
+    width: 50px;
     border-radius: 999px;
     position: fixed;
     display: flex;
@@ -369,6 +384,8 @@ const startApp = async function(event: Event){
     transform: translate(-50%, -50%);
     z-index: 10;
     background-color: seagreen;
+    font-size: 36px;
+    /* font-weight: bold; */
   }
   .fadeToBlack {
     background-color: black;
@@ -425,13 +442,16 @@ const startApp = async function(event: Event){
   .started {
     display: none;
   }
+  .start-button {
+    font-family: 'Courier New (monospace)';
+  }
   .score {
     font-size: 2rem;
     height: 100%;
     display: flex;
     justify-content:center;
     align-items: center;
-    /* font-family: "Comic Sans MS", "Comic Sans", cursive; */
+    font-family: 'Courier New (monospace)';
   }
   .tiltedUp { border-top: 3px solid black; }
   .tiltedDown { border-bottom: 3px solid black; }
