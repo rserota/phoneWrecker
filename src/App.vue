@@ -45,7 +45,8 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
 let tiltThreshold = 20
 let accuracyThreshold = .25 // a 'perfect' tap is .25 before target time. a valid tap can be at the target time to .5 seconds before
 let timeToTarget: number = 2
-const boundarySize = `${(50/timeToTarget) * .25}%`
+const boundarySize = `${(50/timeToTarget) * .25}%` // is the 50, 50%? is the .25 supposed to be the accuracyThreshold?
+console.log('boundary size: ', boundarySize)
 let appHasStarted = ref(false)
 let gameColor = ref('red')
 let totalScore = ref(0)
@@ -56,7 +57,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Left,
   score: null,
-  type: NoteType.Left90,
+  type: NoteType.Tap,
   },
   {
   targetTime: 4,
@@ -64,7 +65,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Up,
   score: null,
-  type: NoteType.Right90,
+  type: NoteType.Tap,
   },
   {
   targetTime: 5,
@@ -80,7 +81,7 @@ let noteData: NoteData[] = reactive([
   xPos: -50,
   originDirection: Direction.Right,
   score: null,
-  type: NoteType.Left90,
+  type: NoteType.Tap,
   },
 ])
 
@@ -316,10 +317,14 @@ const startApp = async function(event: Event){
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
     <div
       v-for="note in noteData" 
-      v-show="note.score === null" 
+      v-show="note.targetTime > gameTime()" 
       :style="`top: ${note.yPos}%; left: ${note.xPos}%`" 
       class="note" 
-      :class="{bordered: note.targetTime - gameTime() > accuracyThreshold}"
+      :class="{
+        bordered: note.targetTime - gameTime() > accuracyThreshold,
+        fadeToBlack: note.targetTime - gameTime() < accuracyThreshold && !(note.score > 0),
+        scored: note.score > 0,
+      }"
     >
 
       <i v-if="note.type === 'tap'" class="bi-disc spinning"></i>
@@ -341,9 +346,8 @@ const startApp = async function(event: Event){
       }"
       :style="{backgroundColor: gameColor, height: boundarySize, width: boundarySize}"
     >
-      <!-- <i class="bi-alarm"></i> -->
-      <!-- <p>{{ totalScore }}</p> -->
-      <p>{{ totalTurns }}</p>
+      <div class="score">{{ Math.floor(totalScore) }}</div>
+      <!-- <p>{{ totalTurns }}</p> -->
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
       <button :class="{'started':appHasStarted}" @click="startApp()">Start</button>
@@ -365,6 +369,17 @@ const startApp = async function(event: Event){
     transform: translate(-50%, -50%);
     z-index: 10;
     background-color: seagreen;
+  }
+  .fadeToBlack {
+    background-color: black;
+    /* opacity: 0.5; */
+    transition: background-color .7s, opacity .7s;
+  }
+
+  .note.scored {
+    background-color: white;
+    opacity: 1;
+    transition: background-color .05s;
   }
   .spinning {
     animation-name: spin;
@@ -410,7 +425,14 @@ const startApp = async function(event: Event){
   .started {
     display: none;
   }
-
+  .score {
+    font-size: 2rem;
+    height: 100%;
+    display: flex;
+    justify-content:center;
+    align-items: center;
+    /* font-family: "Comic Sans MS", "Comic Sans", cursive; */
+  }
   .tiltedUp { border-top: 3px solid black; }
   .tiltedDown { border-bottom: 3px solid black; }
   .tiltedLeft { border-left: 3px solid black; }
