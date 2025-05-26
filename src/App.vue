@@ -34,7 +34,7 @@ let appStartTime = ref(0)
 let up: number = ref(null); // this is the initial reading on deviceorientation.alpha, that everything else is calibrated against
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
-let spinDirection: {value: Direction | null} = ref(null)
+let spinDirection: {value: Direction.Left | Direction.Right | null} = ref(null)
 let totalTurns = ref(0)
 let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} = reactive({
   left: false,
@@ -252,8 +252,13 @@ function update(){
 		if ( spinProgress.length === 4 ) { 
       gameColor.value = 'green'
 		}
-		if ( spinProgress.length === 5 ) {
-      onSpin(`${spinDirection.value}360`)
+		if ( spinProgress.length === 5 && spinDirection.value !== null ) {
+      if ( spinDirection.value === 'left'){
+        onSpin(NoteType.Left360)
+      }
+      else if ( spinDirection.value === 'right'){
+        onSpin(NoteType.Right360)
+      }
 			// p1.jump()
 			spinDirection.value = null
 			spinProgress = []
