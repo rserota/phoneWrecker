@@ -1,9 +1,11 @@
 <script setup lang="ts">
 // import HelloWorld from './components/HelloWorld.vue'
 import { onMounted, ref, reactive, computed} from 'vue'
+import * as Tone from 'tone'
 
 onMounted(() => {
   console.log(`the component is now mounted.`)
+  console.log(Tone.now(), Tone)
 })
 
 enum Direction {
@@ -18,10 +20,10 @@ enum NoteType {
   HoldDown = 'holdDown', // hold the direction until the hold up. must be paired.
   HoldUp = 'holdUp', // release a previous holdDown
   Left90 = 'left90', // turn left 90 degrees
-  Left180 = 'left180',
+  // Left180 = 'left180',
   Left360 = 'left360',
   Right90 = 'right90',
-  Right180 = 'right180',
+  // Right180 = 'right180',
   Right360 = 'right360',
 }
 
@@ -143,10 +145,29 @@ function onTilt(direction: Direction){
   console.log(direction)
   let gt = gameTime()
 
+  // Tap notes and HoldDown notes are scored the same way. Don't tell the users. shhhh
+  for ( let note of noteData ) {
+    let timeLeft = note.targetTime - gt
+    const isCorrectNoteType = [NoteType.Tap, NoteType.HoldDown].includes(note.type)
+    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && isCorrectNoteType ) {
+      const score = triangularOutput(timeLeft*100) + 25
+      note.score = score
+      totalScore.value += score
+      break
+    }
+  }
+}
+
+// the opposite of a tilt event
+function onRelease(direction: Direction){
+  navigator.vibrate?.(1) // doesn't seem to work, even on android
+  console.log(direction)
+  let gt = gameTime()
+
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
   for ( let note of noteData ) {
     let timeLeft = note.targetTime - gt
-    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && note.type === NoteType.Tap ) {
+    if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && note.type === NoteType.HoldUp ) {
       const score = triangularOutput(timeLeft*100) + 25
       note.score = score
       totalScore.value += score
@@ -175,9 +196,10 @@ function onSpin(noteType: NoteType){
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
+  // a 360 in either direction works. it's not reasonable to be ready for both.
   for ( let note of noteData ) {
     let timeLeft = note.targetTime - gt
-    if ( timeLeft > 0 && timeLeft < .5 && note.type === noteType ) {
+    if ( timeLeft > 0 && timeLeft < .5 && [NoteType.Left360, NoteType.Right360].includes(note.type) ) {
       const score = triangularOutput(timeLeft*100) + 25
       note.score = score
       totalScore.value += score
@@ -189,7 +211,7 @@ function update(){
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
 
 	if ( alpha != null ) {
-    console.log('game time', performance.now(), appStartTime.value, gameTime())
+    console.log('game time', performance.now(), gameTime(), Tone.now(), gameTime() - Tone.now())
     for ( let note of noteData ) {
       let d = note.targetTime - gameTime()
       //xPos needs to be 50 when d is 0. xPos is in %, so 50% is the middle of the page
@@ -271,8 +293,11 @@ function update(){
       onTilt(Direction.Left)
     }
 	}
-	if ( beta.value < tiltThreshold )  { 
-    tiltDirection.left = false
+	if ( beta.value < tiltThreshold )  {
+    if ( tiltDirection.left ) {
+      tiltDirection.left = false
+      onRelease(Direction.Left)
+    }
 	}
 	if ( beta.value > -tiltThreshold )  { 
     tiltDirection.right = false
@@ -315,7 +340,8 @@ function update(){
 }
 
 const startApp = async function(event: Event){
-  console.log('starting app', event)
+  Tone.start()
+  console.log('starting app', event, performance.now(), Tone.now())
   appHasStarted.value = true
   appStartTime.value = performance.now()
 	if ( window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission ) {
@@ -370,7 +396,7 @@ const startApp = async function(event: Event){
       <!-- <p>{{ totalTurns }}</p> -->
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
-      <button class="start-button" :class="{'started':appHasStarted}" @click="startApp()">Start</button>
+      <button class="start-button" :class="{'started':appHasStarted}" @click="startApp(event)">Start</button>
     </div>
   </div>
 </template>
