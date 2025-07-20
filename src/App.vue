@@ -2,33 +2,18 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import { onMounted, ref, reactive, computed} from 'vue'
 import * as Tone from 'tone'
+import { NoteType, noteFactory, Direction, SpinProgress } from './types/index'
+import { tiltThreshold, accuracyThreshold, timeToTarget, boundarySize} from './constants'
+import { songData } from './songData'
 
 onMounted(() => {
   console.log(`the component is now mounted.`)
   console.log(Tone.now(), Tone)
 })
 
-enum Direction {
-  Left = 'left',
-  Up = 'up',
-  Right = 'right',
-  Down = 'down',
-}
 
-enum NoteType {
-  Tap = 'tap', // simple tap in one direction
-  HoldDown = 'holdDown', // hold the direction until the hold up. must be paired.
-  HoldUp = 'holdUp', // release a previous holdDown
-  Left90 = 'left90', // turn left 90 degrees
-  // Left180 = 'left180',
-  Left360 = 'left360',
-  Right90 = 'right90',
-  // Right180 = 'right180',
-  Right360 = 'right360',
-}
 
-interface SpinProgress {gripOrientation: number; time: number}
-interface NoteData { targetTime: number; originDirection: Direction, type: NoteType, score: number | null, yPos: number; xPos: number}
+
 const alpha = ref(0)
 const	beta = ref(0)
 const gamma = ref(0)
@@ -44,50 +29,14 @@ let tiltDirection: {left: boolean, right: boolean, up: boolean, down: boolean} =
   up: false,
   down: false,
 })
-let tiltThreshold = 20
-let accuracyThreshold = .25 // a 'perfect' tap is .25 before target time. a valid tap can be at the target time to .5 seconds before
-let timeToTarget: number = 2
-const boundarySize = `${(50/timeToTarget) * .25}%` // is the 50, 50%? is the .25 supposed to be the accuracyThreshold?
 console.log('boundary size: ', boundarySize)
 let appHasStarted = ref(false)
 let gameColor = ref('red')
 let totalScore = ref(0)
-let noteData: NoteData[] = reactive([
-  {
-  targetTime: 2,
-  yPos: -50,
-  xPos: -50,
-  originDirection: Direction.Left,
-  score: null,
-  type: NoteType.Left360,
-  },
-  {
-  targetTime: 4,
-  yPos: -50,
-  xPos: -50,
-  originDirection: Direction.Up,
-  score: null,
-  type: NoteType.Right360,
-  },
-  {
-  targetTime: 5,
-  yPos: -50,
-  xPos: -50,
-  originDirection: Direction.Down,
-  score: null,
-  type: NoteType.Right90,
-  },
-  {
-  targetTime: 5.5,
-  yPos: -50,
-  xPos: -50,
-  originDirection: Direction.Right,
-  score: null,
-  type: NoteType.Tap,
-  },
-])
 
-const gameTime = ()=>{ return (performance.now() - appStartTime.value) / 1000 }
+const player = new Tone.Player("/public/woman_on_the_moon.ogg").toDestination();
+
+const gameTime = ()=>{ return (Tone.now() - appStartTime.value) }
 function deviceOrientationListener(event){
   console.log('orientation event', event)
   let oldGripOrientation: number = gripOrientation
@@ -146,7 +95,7 @@ function onTilt(direction: Direction){
   let gt = gameTime()
 
   // Tap notes and HoldDown notes are scored the same way. Don't tell the users. shhhh
-  for ( let note of noteData ) {
+  for ( let note of songData ) {
     let timeLeft = note.targetTime - gt
     const isCorrectNoteType = [NoteType.Tap, NoteType.HoldDown].includes(note.type)
     if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && isCorrectNoteType ) {
@@ -165,7 +114,7 @@ function onRelease(direction: Direction){
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
-  for ( let note of noteData ) {
+  for ( let note of songData ) {
     let timeLeft = note.targetTime - gt
     if ( timeLeft > 0 && timeLeft < .5 && direction === note.originDirection && note.type === NoteType.HoldUp ) {
       const score = triangularOutput(timeLeft*100) + 25
@@ -180,7 +129,7 @@ function onTurn(noteType: NoteType){
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
-  for ( let note of noteData ) {
+  for ( let note of songData ) {
     let timeLeft = note.targetTime - gt
     if ( timeLeft > 0 && timeLeft < .5 && note.type === noteType ) {
       const score = triangularOutput(timeLeft*100) + 25
@@ -197,7 +146,7 @@ function onSpin(noteType: NoteType){
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
   // a 360 in either direction works. it's not reasonable to be ready for both.
-  for ( let note of noteData ) {
+  for ( let note of songData ) {
     let timeLeft = note.targetTime - gt
     if ( timeLeft > 0 && timeLeft < .5 && [NoteType.Left360, NoteType.Right360].includes(note.type) ) {
       const score = triangularOutput(timeLeft*100) + 25
@@ -206,13 +155,24 @@ function onSpin(noteType: NoteType){
     }
   }
 }
+    console.log('tone time', Tone.Time('0:0:0').toSeconds())
+    console.log('tone time', Tone.Time('0:0:1').toSeconds())
+    console.log('tone time', Tone.Time('0:0:2').toSeconds())
+    console.log('tone time', Tone.Time('0:0:3').toSeconds())
+    console.log('tone time', Tone.Time('0:0:4').toSeconds())
+    console.log('tone time', Tone.Time('0:0:5').toSeconds())
+    console.log('tone time', Tone.Time('0:0:6').toSeconds())
+    console.log('tone time', Tone.Time('0:0:7').toSeconds())
+    console.log('tone time', Tone.Time('0:0:8').toSeconds())
+    console.log('tone time', Tone.Time('0:0:9').toSeconds())
+    console.log('tone time', Tone.Time('0:1:0').toSeconds())
 
 function update(){
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
 
 	if ( alpha != null ) {
-    console.log('game time', performance.now(), gameTime(), Tone.now(), gameTime() - Tone.now())
-    for ( let note of noteData ) {
+    // console.log('game time', performance.now(), gameTime(), Tone.now(), gameTime() - Tone.now())
+    for ( let note of songData ) {
       let d = note.targetTime - gameTime()
       //xPos needs to be 50 when d is 0. xPos is in %, so 50% is the middle of the page
 
@@ -329,7 +289,7 @@ function update(){
 	}
 
   // you "miss" a note when it reaches the center
-  for ( let note of noteData ) {
+  for ( let note of songData ) {
     if ( note.score !== 0 && gameTime() > note.targetTime ) {
       note.score = 0
     }
@@ -340,10 +300,7 @@ function update(){
 }
 
 const startApp = async function(event: Event){
-  Tone.start()
   console.log('starting app', event, performance.now(), Tone.now())
-  appHasStarted.value = true
-  appStartTime.value = performance.now()
 	if ( window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission ) {
 		let response = await DeviceMotionEvent.requestPermission()
 		if (response == 'granted') {
@@ -354,6 +311,11 @@ const startApp = async function(event: Event){
 		window.addEventListener('deviceorientation', deviceOrientationListener)
 	}
 	// goEl.style.display = 'none'
+  appHasStarted.value = true
+  await Tone.start()
+  appStartTime.value = Tone.now()
+  player.start()
+
 	update()
 }
 
@@ -362,7 +324,7 @@ const startApp = async function(event: Event){
 <template>
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
     <div
-      v-for="note in noteData" 
+      v-for="note in songData" 
       v-show="note.targetTime > gameTime()" 
       :style="`top: ${note.yPos}%; left: ${note.xPos}%`" 
       class="note" 

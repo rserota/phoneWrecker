@@ -1,0 +1,1 @@
+export interface SpinProgress {gripOrientation: number; time: number}
