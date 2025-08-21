@@ -336,12 +336,14 @@ const startApp = async function(event: Event){
     >
 
       <i v-if="note.type === 'tap'" class="bi-disc spinning"></i>
+      <i v-if="note.type === 'holdUp'" class="bi-box-arrow-up"></i>
+      <i v-if="note.type === 'holdDown'" class="bi-box-arrow-in-down"></i>
       <i v-if="note.type === 'left90'" class="bi-arrow-90deg-left"></i>
       <i v-if="note.type === 'left180'" class="bi-arrow-90deg-left"></i>
-      <i v-if="note.type === 'left360'" class="bi-arrow-counterclockwise"></i>
+      <i v-if="note.type === 'left360'" class="bi-arrow-counterclockwise spinning"></i>
       <i v-if="note.type === 'right90'" class="bi-arrow-90deg-right"></i>
       <i v-if="note.type === 'right180'" class="bi-arrow-90deg-right"></i>
-      <i v-if="note.type === 'right360'" class="bi-arrow-clockwise"></i>
+      <i v-if="note.type === 'right360'" class="bi-arrow-clockwise spinning"></i>
       <!-- {{ (note.targetTime - gameTime()) }} -->
     </div>
     <div 
