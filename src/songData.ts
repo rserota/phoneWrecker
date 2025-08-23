@@ -127,8 +127,6 @@ export const songData: NoteData[] = reactive([
   noteFactory('20:0:0', Direction.Right, NoteType.Tap),
 
   //damn, you got me
-  noteFactory('20:1:0', Direction.Right, NoteType.Tap),
-  noteFactory('20:1:1', Direction.Down, NoteType.Tap),
   noteFactory('20:1:2', Direction.Left, NoteType.Tap),
   noteFactory('20:1:3', Direction.Up, NoteType.Tap),
   noteFactory('20:2:0', Direction.Right, NoteType.Tap),
@@ -166,4 +164,194 @@ export const songData: NoteData[] = reactive([
   noteFactory('24:1:2', Direction.Right, NoteType.Tap),
   // moon
   noteFactory('24:2:0', Direction.Right, NoteType.Tap),
+
+
+
+  // woman on the
+  noteFactory('25:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('25:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('25:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('25:1:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('25:2:0', Direction.Right, NoteType.Tap),
+
+  // woman on the
+  noteFactory('26:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('26:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('26:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('26:1:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('26:2:0', Direction.Right, NoteType.Tap),
+
+
+  //pickup the momentum
+  noteFactory('27:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('27:1:3', Direction.Right, NoteType.Tap),
+  noteFactory('27:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('27:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('27:3:2', Direction.Right, NoteType.Tap),
+
+  noteFactory('28:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('28:1:3', Direction.Right, NoteType.Tap),
+  noteFactory('28:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('28:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('28:3:2', Direction.Right, NoteType.Tap),
+
+  noteFactory('29:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('29:1:3', Direction.Right, NoteType.Tap),
+  noteFactory('29:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('29:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('29:3:2', Direction.Right, NoteType.Tap),
+
+  // clap clap
+  noteFactory('30:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('30:3:0', Direction.Right, NoteType.Tap),
+
+  //every
+  noteFactory('31:0:0', Direction.Right, NoteType.Right360),
+  noteFactory('31:0:0', Direction.Left, NoteType.Right360),
+  noteFactory('31:0:0', Direction.Up, NoteType.Right360),
+  noteFactory('31:0:0', Direction.Down, NoteType.Right360),
+
+
+  //time we touch
+  noteFactory('31:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('31:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('31:2:0', Direction.Right, NoteType.Tap),
+
+
+  //body turn to dust
+  noteFactory('32:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('32:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('32:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('32:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('32:2:0', Direction.Right, NoteType.Tap),
+
+  // higher than a
+  noteFactory('33:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('33:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('33:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('33:1:2', Direction.Right, NoteType.Tap),
+
+  // woman on the
+  noteFactory('33:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('33:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('33:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('33:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('34:0:0', Direction.Right, NoteType.Tap),
+
+
+  // woman on the
+  noteFactory('34:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('34:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('34:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('34:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('35:0:0', Direction.Right, NoteType.Tap),
+
+  // woman on
+  noteFactory('35:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('35:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('35:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('35:3:2', Direction.Right, NoteType.Tap),
+
+  // moon
+  noteFactory('36:0:0', Direction.Right, NoteType.Tap),
+
+  //damn, you got me
+  noteFactory('36:1:2', Direction.Left, NoteType.Tap),
+  noteFactory('36:1:3', Direction.Up, NoteType.Tap),
+  noteFactory('36:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('36:2:1', Direction.Down, NoteType.Tap),
+  noteFactory('36:2:2', Direction.Left, NoteType.Tap),
+  noteFactory('36:2:3', Direction.Up, NoteType.Tap),
+
+  // higher than a
+  noteFactory('37:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('37:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('37:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('37:1:2', Direction.Right, NoteType.Tap),
+
+  // woman on the
+  noteFactory('37:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('37:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('37:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('37:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('38:0:0', Direction.Right, NoteType.Tap),
+
+  //every
+  noteFactory('39:0:0', Direction.Right, NoteType.Right360),
+  noteFactory('39:0:0', Direction.Left, NoteType.Right360),
+  noteFactory('39:0:0', Direction.Up, NoteType.Right360),
+  noteFactory('39:0:0', Direction.Down, NoteType.Right360),
+
+
+  //time we touch
+  noteFactory('39:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('39:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('39:2:0', Direction.Right, NoteType.Tap),
+
+
+  //body turn to dust
+  noteFactory('40:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('40:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('40:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('40:1:2', Direction.Right, NoteType.Tap),
+  noteFactory('40:2:0', Direction.Right, NoteType.Tap),
+
+  // higher than a
+  noteFactory('41:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('41:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('41:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('41:1:2', Direction.Right, NoteType.Tap),
+
+  // woman on the
+  noteFactory('41:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('41:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('41:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('41:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('42:0:0', Direction.Right, NoteType.Tap),
+
+
+  // woman on the
+  noteFactory('42:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('42:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('42:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('42:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('43:0:0', Direction.Right, NoteType.Tap),
+
+  // woman on
+  noteFactory('43:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('43:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('43:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('43:3:2', Direction.Right, NoteType.Tap),
+
+  // moon
+  noteFactory('44:0:0', Direction.Right, NoteType.Tap),
+
+  //damn, you got me
+  noteFactory('44:1:2', Direction.Left, NoteType.Tap),
+  noteFactory('44:1:3', Direction.Up, NoteType.Tap),
+  noteFactory('44:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('44:2:1', Direction.Down, NoteType.Tap),
+  noteFactory('44:2:2', Direction.Left, NoteType.Tap),
+  noteFactory('44:2:3', Direction.Up, NoteType.Tap),
+
+  // higher than a
+  noteFactory('45:0:0', Direction.Right, NoteType.Tap),
+  noteFactory('45:0:2', Direction.Right, NoteType.Tap),
+  noteFactory('45:1:0', Direction.Right, NoteType.Tap),
+  noteFactory('45:1:2', Direction.Right, NoteType.Tap),
+
+  // woman on the
+  noteFactory('45:2:0', Direction.Right, NoteType.Tap),
+  noteFactory('45:2:2', Direction.Right, NoteType.Tap),
+  noteFactory('45:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('45:3:2', Direction.Right, NoteType.Tap),
+  // moon
+  noteFactory('46:0:0', Direction.Right, NoteType.Tap),
 ])
