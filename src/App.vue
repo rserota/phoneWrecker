@@ -323,6 +323,27 @@ const startApp = async function(event: Event){
 
 <template>
   <div id="game-container" :style="`transform: translate(-50%, -50%) rotate(${alpha - 90}deg)`">
+    <div class="how-to-play-container">
+      <div class="how-to-play">
+
+        <h1>How To Play</h1>
+        <p>Sit down in a comfortable place and unplug your headphones.</p>
+        <p>In this game, colorful music notes will approach the center of the screen from all four sides of your phone.</p>
+        <p><strong>At the moment the note crosses the <em>edge</em> of the box in the center of your screen,</strong> you must move your phone (tilt, turn, or spin) to earn points.</p>
+        <p>Feel the rhythm and stay on the beat to get a high score!</p>
+        <div class="tutorial-p">Tap is the most common note you'll see. Tilt your phone towards the note as it crosses the edge of the box. <div style="display:inline-block; float: right"><div class="note tap" style="position: static; transform: initial;"> <i class="bi-disc spinning"></i></div></div></div>
+        <div class="tutorial-p">Hold is similar to tap, but hold your phone tilted until you see a release note.
+          <div style="display:inline-block; float: right">
+            <div class="note holdUp" style="position: static; transform: initial;"> <i class="bi-box-arrow-up"></i></div>
+          </div>
+          <div style="display:inline-block; float: right">
+            <div class="note holdDown" style="position: static; transform: initial;"> <i class="bi-box-arrow-in-down"></i></div>
+          </div>
+        </div>
+        <div class="tutorial-p">Turn notes require you to turn your phone 90 degrees. From landscape mode to portrait mode, and back.<br> Turn notes always appear two at a time. It doesn't matter which direction they come from.<div style="display:inline-block; float: right"><div class="note right90" style="position: static; transform: initial;"> <i class="bi-arrow-90deg-right spinning"></i></div></div></div>
+        <div class="tutorial-p">Spin notes require you to throw your phone in the air so that it rotates 360 degrees. You must catch it just as the note passes the edge of the box. This is not a joke. I mean, this whole app is kind of a joke, but you will actually score points by following these instructions.<br> Spin notes always appear four at a time. It doesn't matter which direction they come from.<div style="display:inline-block; float: right"><div class="note right360" style="position: static; transform: initial;"> <i class="bi-arrow-clockwise spinning"></i></div></div></div>
+      </div>
+    </div>
     <div
       v-for="note in songData" 
       v-show="note.targetTime > gameTime()" 
@@ -332,6 +353,13 @@ const startApp = async function(event: Event){
         bordered: note.targetTime - gameTime() > accuracyThreshold,
         fadeToBlack: note.targetTime - gameTime() < accuracyThreshold && !(note.score > 0),
         scored: note.score > 0,
+        tap: note.type === 'tap',
+        holdUp: note.type === 'holdUp',
+        holdDown: note.type === 'holdDown',
+        left90: note.type === 'left90',
+        right90: note.type === 'right90',
+        right360: note.type === 'right360',
+        left360: note.type === 'left360',
       }"
     >
 
@@ -360,12 +388,13 @@ const startApp = async function(event: Event){
       <!-- <p>{{ totalTurns }}</p> -->
       <!-- <p>{{ tiltDirection.up }} {{ tiltDirection.down }} {{ tiltDirection.left }} {{ tiltDirection.right }}</p> -->
       <!-- <p>{{alpha}} {{beta}} {{gamma}}!</p> -->
-      <button class="start-button" :class="{'started':appHasStarted}" @click="startApp(event)">Start</button>
+      <button class="start-button" :class="{'hidden':appHasStarted}" @click="startApp(event)">Start</button>
     </div>
   </div>
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
   .note {
     height: 50px;
     width: 50px;
@@ -378,9 +407,26 @@ const startApp = async function(event: Event){
     top: 50%; */
     transform: translate(-50%, -50%);
     z-index: 10;
-    background-color: seagreen;
     font-size: 36px;
     /* font-weight: bold; */
+  }
+  .note.tap {
+    /* background-color: rgb(40,140,80) */
+    background-color: rgb(35, 122, 70)
+  }
+  .note.holdDown {
+    background-color: rgb(35, 122, 70)
+  }
+  .note.holdUp {
+    background-color: rgb(148, 241, 185)
+  }
+
+  .note.left360, .note.right360 {
+    background-color:yellow;
+  }
+
+  .note.left90, .note.right90 {
+    background-color: rgb(215, 45, 45);
   }
   .fadeToBlack {
     background-color: black;
@@ -400,6 +446,10 @@ const startApp = async function(event: Event){
     animation-timing-function: linear; 
   }
 
+  .tutorial-p {
+    margin-top: 3vmax;
+    margin-bottom: 3vmax;
+  }
   @keyframes spin {
     from {
       transform:rotate(0deg);
@@ -434,7 +484,24 @@ const startApp = async function(event: Event){
 
   }
 
-  .started {
+  .how-to-play-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height:100vh;
+    /* width: 100%; */
+
+  }
+  .how-to-play {
+    width: 80vh;
+    border: 2px solid black;
+    padding: 1vmax;
+    background-color: rgba(255,255,255,.8);
+    border-radius: 10px;
+    font-family: "Comic Neue", sans-serif;
+    margin: 2vmax;
+  }
+  .hidden {
     display: none;
   }
   .start-button {

@@ -15,10 +15,10 @@ export const songData: NoteData[] = reactive([
   noteFactory('3:3:2', Direction.Right, NoteType.HoldDown),
   noteFactory('4:0:0', Direction.Right, NoteType.HoldUp),
 
-  noteFactory('4:1:2', Direction.Right, NoteType.Tap),
-  noteFactory('4:2:0', Direction.Right, NoteType.Tap),
-  noteFactory('4:2:2', Direction.Right, NoteType.Tap),
-  noteFactory('4:3:0', Direction.Right, NoteType.Tap),
+  noteFactory('4:1:2', Direction.Right, NoteType.Left90),
+  noteFactory('4:2:0', Direction.Right, NoteType.Right90),
+  noteFactory('4:2:2', Direction.Right, NoteType.Left360),
+  noteFactory('4:3:0', Direction.Right, NoteType.Right360),
   noteFactory('4:3:2', Direction.Right, NoteType.Tap),
   noteFactory('5:0:0', Direction.Right, NoteType.Tap),
 
@@ -54,6 +54,8 @@ export const songData: NoteData[] = reactive([
   noteFactory('10:0:0', Direction.Right, NoteType.Tap),
 
 
+  noteFactory('11:0:0', Direction.Right, NoteType.Left90),
+  noteFactory('11:0:0', Direction.Left, NoteType.Left90),
   //pickup the momentum
   noteFactory('11:1:2', Direction.Right, NoteType.Tap),
   noteFactory('11:1:3', Direction.Right, NoteType.Tap),
@@ -184,6 +186,8 @@ export const songData: NoteData[] = reactive([
   noteFactory('26:2:0', Direction.Right, NoteType.Tap),
 
 
+  noteFactory('27:0:0', Direction.Right, NoteType.Right90),
+  noteFactory('27:0:0', Direction.Left, NoteType.Right90),
   //pickup the momentum
   noteFactory('27:1:2', Direction.Right, NoteType.Tap),
   noteFactory('27:1:3', Direction.Right, NoteType.Tap),
