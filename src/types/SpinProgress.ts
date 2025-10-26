@@ -1,1 +1,4 @@
-export interface SpinProgress {gripOrientation: number; time: number}
+// @ts-ignore
+import {ref} from 'vue'
+// @ts-ignore
+export interface SpinProgress {gripOrientation: ref<number>; time: number}

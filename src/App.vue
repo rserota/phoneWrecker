@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // import HelloWorld from './components/HelloWorld.vue'
-import { onMounted, ref, reactive, computed} from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import * as Tone from 'tone'
-import { NoteType, noteFactory, Direction, SpinProgress } from './types/index'
+import { NoteType, Direction, type SpinProgress } from './types/index'
 import { tiltThreshold, accuracyThreshold, timeToTarget, boundarySize} from './constants'
 import { songData } from './songData'
 
@@ -18,7 +18,7 @@ const alpha = ref(0)
 const	beta = ref(0)
 const gamma = ref(0)
 let appStartTime = ref(0)
-let up: number = ref(null); // this is the initial reading on deviceorientation.alpha, that everything else is calibrated against
+let up = ref<number|null>(null); // this is the initial reading on deviceorientation.alpha, that everything else is calibrated against
 let gripOrientation = ref(0) // 0 = normal horizontal alpha between 315 - 45
 let spinProgress: SpinProgress[] = reactive([])
 let spinDirection: {value: Direction.Left | Direction.Right | null} = ref(null)
@@ -37,45 +37,55 @@ let totalScore = ref(0)
 const player = new Tone.Player("/public/woman_on_the_moon.ogg").toDestination();
 
 const gameTime = ()=>{ return (Tone.now() - appStartTime.value) }
-function deviceOrientationListener(event){
+function deviceOrientationListener(event: DeviceOrientationEvent){
   console.log('orientation event', event)
-  let oldGripOrientation: number = gripOrientation
+  let oldGripOrientation = gripOrientation
 	alpha.value = event.alpha || alpha.value
+  // @ts-ignore
 	if ( up == null ) { up = event.alpha }
+  if ( typeof event.beta != 'number' || typeof event.gamma != 'number' ) { return }
 	if ( alpha.value < 45 ) { 
+  // @ts-ignore
 		gripOrientation = 0 
 		beta.value = event.beta || beta.value
 		gamma.value = event.gamma || gamma.value
 	} // normal grip
 	else if ( alpha.value < 135 ) {
+  // @ts-ignore
 		gripOrientation = 1;  
 		beta.value = -event.gamma || beta.value
 		gamma.value = event.beta || gamma.value
 	}
 	else if ( alpha.value < 225 ) {
+  // @ts-ignore
 		gripOrientation = 2 
 		beta.value = -event.beta || beta.value
 		gamma.value = -event.gamma || gamma.value
 	}
 	else if ( alpha.value < 315 ) { 
+  // @ts-ignore
 		gripOrientation = 3 
 		beta.value = event.gamma || beta.value
 		gamma.value = -event.beta || gamma.value
 	}
 	else if ( alpha.value >= 315 ) { 
+  // @ts-ignore
 		gripOrientation = 0 
 		beta.value = event.beta || beta.value
 		gamma.value = event.gamma || gamma.value
 	}
 
+  // @ts-ignore
   if ( gripOrientation !== oldGripOrientation ){
+  // @ts-ignore
     if ( oldGripOrientation === gripOrientation - 1 || oldGripOrientation === 3 && gripOrientation === 0 ) {
       totalTurns.value++
-      onTurn(NoteType.Left90)
+      onTurn()
     }
+  // @ts-ignore
     if ( oldGripOrientation === gripOrientation + 1 || oldGripOrientation === 0 && gripOrientation === 3 ) {
       totalTurns.value--
-      onTurn(NoteType.Right90)
+      onTurn()
     }
   }
 }
@@ -125,7 +135,7 @@ function onRelease(direction: Direction){
   }
 }
 
-function onTurn(noteType: NoteType){
+function onTurn(){
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
@@ -141,7 +151,7 @@ function onTurn(noteType: NoteType){
 
 }
 
-function onSpin(noteType: NoteType){
+function onSpin(){
   let gt = gameTime()
 
   //onTilt should look for one note at a time, but the spin methods need to check multiple notes
@@ -155,19 +165,9 @@ function onSpin(noteType: NoteType){
     }
   }
 }
-    console.log('tone time', Tone.Time('0:0:0').toSeconds())
-    console.log('tone time', Tone.Time('0:0:1').toSeconds())
-    console.log('tone time', Tone.Time('0:0:2').toSeconds())
-    console.log('tone time', Tone.Time('0:0:3').toSeconds())
-    console.log('tone time', Tone.Time('0:0:4').toSeconds())
-    console.log('tone time', Tone.Time('0:0:5').toSeconds())
-    console.log('tone time', Tone.Time('0:0:6').toSeconds())
-    console.log('tone time', Tone.Time('0:0:7').toSeconds())
-    console.log('tone time', Tone.Time('0:0:8').toSeconds())
-    console.log('tone time', Tone.Time('0:0:9').toSeconds())
-    console.log('tone time', Tone.Time('0:1:0').toSeconds())
 
 function update(){
+  // @ts-ignore
 	if ( window._alpha ) { alpha.value = window._alpha } //debug
 
 	if ( alpha != null ) {
@@ -200,6 +200,7 @@ function update(){
     // console.log('spin progress: ', spinProgress)
 		// gameEl.style.transform = `translateX(-50%) translateY(-50%) rotate(${alpha - 90}deg)`
 		// Overlay.wrapper.style.transform = `translateX(-50%) translateY(-50%) rotate(${alpha - 90}deg)`
+    // @ts-ignore
 		if ( spinProgress.length === 0 ) { spinProgress.unshift({gripOrientation, time: performance.now()}) }
 
 		// spin progress resets if they take more than 500ms to complete a quarter turn
@@ -207,10 +208,12 @@ function update(){
 		else if ( spinProgress[0].gripOrientation === gripOrientation ) {
 			// do nothing
 		}
+    // @ts-ignore
 		else if ( (spinDirection.value === null || spinDirection.value === 'left') && (spinProgress[0].gripOrientation === (gripOrientation - 1) || (spinProgress[0].gripOrientation === 3 && gripOrientation === 0 ) )) {
 			spinDirection.value = Direction.Left
 			spinProgress.unshift({gripOrientation, time: performance.now()})
 		}
+    // @ts-ignore
 		else if ( (spinDirection.value === null || spinDirection.value === 'right') && (spinProgress[0].gripOrientation === (gripOrientation + 1) || (spinProgress[0].gripOrientation === 0 && gripOrientation === 3 ) )) {
 			spinDirection.value = Direction.Right
 			spinProgress.unshift({gripOrientation, time: performance.now()})
@@ -235,13 +238,7 @@ function update(){
       gameColor.value = 'green'
 		}
 		if ( spinProgress.length === 5 && spinDirection.value !== null ) {
-      if ( spinDirection.value === 'left'){
-        onSpin(NoteType.Left360)
-      }
-      else if ( spinDirection.value === 'right'){
-        onSpin(NoteType.Right360)
-      }
-			// p1.jump()
+      onSpin()
 			spinDirection.value = null
 			spinProgress = []
 		}
@@ -299,9 +296,10 @@ function update(){
 	requestAnimationFrame(update)
 }
 
-const startApp = async function(event: Event){
-  console.log('starting app', event, performance.now(), Tone.now())
+const startApp = async function(){
+    // @ts-ignore
 	if ( window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission ) {
+    // @ts-ignore
 		let response = await DeviceMotionEvent.requestPermission()
 		if (response == 'granted') {
 			window.addEventListener('deviceorientation', deviceOrientationListener)
@@ -327,7 +325,7 @@ const startApp = async function(event: Event){
 
         <h1>
           How To Play
-          <button class="start-button" style="float: right;"  @click="startApp(event)">Start</button>
+          <button class="start-button" style="float: right;"  @click="startApp()">Start</button>
         </h1>
         <p>Sit down in a comfortable place. Lock rotation on your phone, and disconnect your headphones. Hold your phone with a steady grip, so that it is parallel to the ground.</p>
         <p>In this game, colorful music notes will approach the center of the screen from all four sides of your phone.</p>
@@ -357,8 +355,8 @@ const startApp = async function(event: Event){
       class="note" 
       :class="{
         bordered: note.targetTime - gameTime() > accuracyThreshold,
-        fadeToBlack: note.targetTime - gameTime() < accuracyThreshold && !(note.score > 0),
-        scored: note.score > 0,
+        fadeToBlack: note.targetTime - gameTime() < accuracyThreshold && !(typeof note.score == 'number' && note.score > 0),
+        scored: typeof note.score == 'number' && note.score > 0,
         tap: note.type === 'tap',
         holdUp: note.type === 'holdUp',
         holdDown: note.type === 'holdDown',
